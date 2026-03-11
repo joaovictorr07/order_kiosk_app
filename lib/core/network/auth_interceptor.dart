@@ -1,20 +1,15 @@
 import 'package:dio/dio.dart';
 
-typedef TokenResolver = Future<String?> Function();
+import '../storage/local_storage_service.dart';
 
 class AuthInterceptor extends Interceptor {
-  AuthInterceptor({
-    TokenResolver? tokenResolver,
-  }) : _tokenResolver = tokenResolver;
-
-  final TokenResolver? _tokenResolver;
-
   @override
   Future<void> onRequest(
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final token = await _tokenResolver?.call();
+    final storage = await LocalStorageService.getInstance();
+    final token = storage.getAuthToken();
 
     if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';

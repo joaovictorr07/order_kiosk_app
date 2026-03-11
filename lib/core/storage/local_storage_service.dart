@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class LocalStorageService {
   LocalStorageService._(this._preferences);
 
+  static const String _authTokenKey = 'auth_token';
+
   static LocalStorageService? _instance;
 
   final SharedPreferences _preferences;
@@ -17,6 +19,18 @@ class LocalStorageService {
     final service = LocalStorageService._(preferences);
     _instance = service;
     return service;
+  }
+
+  Future<void> saveAuthToken(String token) async {
+    await _preferences.setString(_authTokenKey, token);
+  }
+
+  String? getAuthToken() {
+    return _preferences.getString(_authTokenKey);
+  }
+
+  Future<void> removeAuthToken() async {
+    await _preferences.remove(_authTokenKey);
   }
 
   Future<void> setString(String key, String value) async {
