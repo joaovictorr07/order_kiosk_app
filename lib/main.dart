@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:order_kiosk_app/core/theme/app_theme.dart';
 import 'package:order_kiosk_app/features/home/home_page.dart';
 
 void main() {
@@ -13,9 +14,7 @@ class OrderKioskApp extends StatelessWidget {
     return MaterialApp(
       title: 'Order Kiosk',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-      ),
+      theme: AppTheme.light(),
       home: const HomePage(),
     );
   }
