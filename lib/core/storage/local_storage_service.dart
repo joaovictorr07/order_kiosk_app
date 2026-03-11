@@ -1,9 +1,9 @@
+import 'package:order_kiosk_app/core/constants/app_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalStorageService {
   LocalStorageService._(this._preferences);
 
-  static const String _authTokenKey = 'auth_token';
 
   static LocalStorageService? _instance;
 
@@ -22,15 +22,15 @@ class LocalStorageService {
   }
 
   Future<void> saveAuthToken(String token) async {
-    await _preferences.setString(_authTokenKey, token);
+    await _preferences.setString(AppConstants.storageAuthTokenKey, token);
   }
 
   String? getAuthToken() {
-    return _preferences.getString(_authTokenKey);
+    return _preferences.getString(AppConstants.storageAuthTokenKey);
   }
 
   Future<void> removeAuthToken() async {
-    await _preferences.remove(_authTokenKey);
+    await _preferences.remove(AppConstants.storageAuthTokenKey);
   }
 
   Future<void> setString(String key, String value) async {
