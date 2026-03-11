@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:order_kiosk_app/core/utils/error_presenter.dart';
 import 'package:order_kiosk_app/widgets/app_scroll_page.dart';
 import 'package:provider/provider.dart';
 
@@ -30,21 +31,17 @@ class _AuthPageState extends State<AuthPage> {
 
     FocusScope.of(context).unfocus();
 
-    final success = await context.read<AuthController>().login(
+    final controller = context.read<AuthController>();
+
+    final error = await controller.login(
       clientId: _clientIdController.text.trim(),
       clientSecret: _clientSecretController.text.trim(),
     );
 
     if (!mounted) return;
 
-    if (!success) {
-      final errorMessage =
-          context.read<AuthController>().errorMessage ??
-          'Não foi possível autenticar o totem.';
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(errorMessage)));
+    if (error != null) {
+      await ErrorPresenter.show(context, error);
     }
   }
 
@@ -76,9 +73,7 @@ class _AuthPageState extends State<AuthPage> {
                   controller: _clientIdController,
                   enabled: !controller.isLoading,
                   textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    labelText: 'Totem ID',
-                  ),
+                  decoration: const InputDecoration(labelText: 'Totem ID'),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Informe o totem ID.';
@@ -112,9 +107,7 @@ class _AuthPageState extends State<AuthPage> {
                         ? const SizedBox(
                             width: 22,
                             height: 22,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.2,
-                            ),
+                            child: CircularProgressIndicator(strokeWidth: 2.2),
                           )
                         : const Text('Autenticar totem'),
                   ),

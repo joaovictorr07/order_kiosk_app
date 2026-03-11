@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:order_kiosk_app/core/errors/app_exception.dart';
+import 'package:order_kiosk_app/core/errors/error_parser.dart';
 
 import '../../core/storage/local_storage_service.dart';
 import 'auth_service.dart';
@@ -15,34 +17,42 @@ class AuthController extends ChangeNotifier {
   final LocalStorageService _localStorageService;
 
   bool _isLoading = false;
+  bool _isBootstrapping = true;
   bool _isAuthenticated = false;
-  String? _errorMessage;
+  AppException? _lastError;
 
+ bool get isBootstrapping => _isBootstrapping;
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _isAuthenticated;
-  String? get errorMessage => _errorMessage;
+  AppException? get lastError => _lastError;
 
   Future<void> bootstrap() async {
-    _setLoading(true);
+    _isBootstrapping = true;
+    notifyListeners();
 
     try {
       final token = await _localStorageService.getAuthToken();
       _isAuthenticated = token != null && token.isNotEmpty;
-      _errorMessage = null;
+      _lastError = null;
     } catch (_) {
       _isAuthenticated = false;
-      _errorMessage = 'Erro ao verificar autenticação local.';
+      _lastError = AppException(
+        statusCode: null,
+        title: 'Erro ao verificar autenticação local',
+        message: 'Não foi possível verificar a autenticação local.',
+      );
     } finally {
-      _setLoading(false);
+      _isBootstrapping = false;
+      notifyListeners();
     }
   }
 
-  Future<bool> login({
+  Future<AppException?> login({
     required String clientId,
     required String clientSecret,
   }) async {
-    _setLoading(true);
-    _errorMessage = null;
+    _isLoading = true;
+    notifyListeners();
 
     try {
       final authModel = await _authService.login(
@@ -53,35 +63,30 @@ class AuthController extends ChangeNotifier {
       await _localStorageService.saveAuthToken(authModel.accessToken);
 
       _isAuthenticated = true;
-      notifyListeners();
-      return true;
+      _lastError = null;
+      return null;
     } catch (e, stackTrace) {
       debugPrint('Erro ao autenticar totem: $e');
       debugPrintStack(stackTrace: stackTrace);
 
-      if (e is DioException) {
-        debugPrint('Status code: ${e.response?.statusCode}');
-        debugPrint('Response data: ${e.response?.data}');
-      }
-
       _isAuthenticated = false;
-      _errorMessage = 'Não foi possível autenticar o totem.';
-      notifyListeners();
-      return false;
+      _lastError = ErrorParser.parse(e);
+      return _lastError;
     } finally {
-      _setLoading(false);
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
   Future<void> logout() async {
     await _localStorageService.removeAuthToken();
     _isAuthenticated = false;
-    _errorMessage = null;
+    _lastError = null;
     notifyListeners();
   }
 
   void clearError() {
-    _errorMessage = null;
+    _lastError = null;
     notifyListeners();
   }
 

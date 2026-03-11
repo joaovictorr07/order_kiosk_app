@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:order_kiosk_app/features/splash/splash_page.dart';
 import 'package:provider/provider.dart';
 
 import '../home/home_page.dart';
@@ -12,10 +13,10 @@ class AuthGate extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AuthController>(
       builder: (context, controller, _) {
-        if (controller.isLoading) {
+        if (controller.isBootstrapping) {
           return const Scaffold(
             body: Center(
-              child: CircularProgressIndicator(),
+              child: SplashPage(),
             ),
           );
         }
